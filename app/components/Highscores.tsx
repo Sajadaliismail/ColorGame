@@ -9,8 +9,9 @@ import {
 } from "@/components/ui/table";
 
 interface HighScore {
-  name: string;
+  username: string;
   score: number;
+  date: number;
 }
 
 interface HighScoresProps {
@@ -29,14 +30,22 @@ export const HighScores: React.FC<HighScoresProps> = ({ scores }) => {
             <TableHead className="w-[100px]">Rank</TableHead>
             <TableHead>Name</TableHead>
             <TableHead className="text-right">Score</TableHead>
+            <TableHead className="text-right">Date</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {scores.map((score, index) => (
             <TableRow key={index}>
               <TableCell className="font-medium">{index + 1}</TableCell>
-              <TableCell>{score.name}</TableCell>
+              <TableCell>{score.username}</TableCell>
               <TableCell className="text-right">{score.score}</TableCell>
+              <TableCell className="text-right text-nowrap">
+                {new Date(score.date).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                })}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

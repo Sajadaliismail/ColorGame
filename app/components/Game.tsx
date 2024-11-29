@@ -9,8 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Eye, Award, Zap, RotateCcw } from "lucide-react";
 
 interface HighScore {
-  name: string;
+  username: string;
   score: number;
+  date: number;
 }
 
 export const Game: React.FC = () => {
@@ -49,11 +50,11 @@ export const Game: React.FC = () => {
   const fetchHighScore = async () => {
     const response = await fetch("/api/highscore");
     const data = await response.json();
-    setHighScores(data);
+    setHighScores(data.data);
   };
 
   const saveHighScore = async (name: string, score: number) => {
-    const scoreData = { name, score };
+    const scoreData = { username: name, score };
     const response = await fetch("/api/highscore", {
       method: "POST",
       body: JSON.stringify(scoreData),
