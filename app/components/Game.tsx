@@ -67,7 +67,6 @@ export const Game: React.FC = () => {
   };
 
   const startNewLevel = () => {
-    setHintCount(1);
     if (gameOver || gameWon) return;
     const { mainColor, oddColor } = generateColors(level);
     setMainColor(mainColor);
