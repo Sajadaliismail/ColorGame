@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Grid } from "./Grid";
 import { HighScores } from "./Highscores";
 import { generateColors } from "../utils/colorUtils";
@@ -28,6 +28,32 @@ export const Game: React.FC = () => {
   const [highScores, setHighScores] = useState<HighScore[]>([]);
   const [showHighScores, setShowHighScores] = useState<boolean>(false);
   const [hintCount, setHintCount] = useState<number>(1);
+  const [gameEnded, setGameEnded] = useState<boolean>(false);
+  const soundRef = useRef<HTMLAudioElement>(null);
+  const failsoundRef = useRef<HTMLAudioElement>(null);
+  const winsoundRef = useRef<HTMLAudioElement>(null);
+  const hintsoundRef = useRef<HTMLAudioElement>(null);
+  const restartsoundRef = useRef<HTMLAudioElement>(null);
+  const [maxScore, setMaxScore] = useState<number>(0);
+
+  const playSound = () => {
+    if (soundRef.current) soundRef.current.play();
+  };
+
+  const playRestartSound = () => {
+    if (restartsoundRef.current) restartsoundRef.current.play();
+  };
+
+  const playFailSound = () => {
+    if (failsoundRef.current) failsoundRef.current.play();
+  };
+
+  const playWinSound = () => {
+    if (winsoundRef.current) winsoundRef.current.play();
+  };
+  const playHintSound = () => {
+    if (hintsoundRef.current) hintsoundRef.current.play();
+  };
   /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
     startNewLevel();
@@ -39,7 +65,7 @@ export const Game: React.FC = () => {
       const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
       return () => clearTimeout(timer);
     } else if (timeLeft === 0) {
-      setGameOver(true);
+      gameEnd();
     }
   }, [timeLeft, gameOver, gameWon]);
   /* eslint-disable react-hooks/exhaustive-deps */
@@ -76,6 +102,13 @@ export const Game: React.FC = () => {
     setShowHint(false);
   };
 
+  const gameEnd = () => {
+    setGameEnded(true);
+    setTimeout(() => {
+      setGameOver(true);
+    }, 1000);
+  };
+
   const handleSquareClick = (index: number) => {
     if (index === oddPosition) {
       const newScore = score + 1;
@@ -88,19 +121,25 @@ export const Game: React.FC = () => {
         newScore === 45
       )
         setHintCount((prev) => prev + 1);
+      setMaxScore((prev) => Math.max(prev, newScore));
       setScore(newScore);
       if (level === 50) {
+        playWinSound();
         setGameWon(true);
       } else {
+        playSound();
         setLevel((prevLevel) => prevLevel + 1);
         startNewLevel();
       }
     } else {
-      setGameOver(true);
+      playFailSound();
+      setShowHint(true);
+      gameEnd();
     }
   };
 
   const restartGame = () => {
+    playRestartSound();
     setHintCount(1);
     setLevel(1);
     setScore(0);
@@ -108,9 +147,11 @@ export const Game: React.FC = () => {
     setGameWon(false);
     setShowHighScores(false);
     startNewLevel();
+    setGameEnded(false);
   };
 
   const toggleHint = () => {
+    playHintSound();
     if (hintCount > 0) {
       setShowHint(!showHint);
       setHintCount((prev) => prev - 1);
@@ -171,7 +212,7 @@ export const Game: React.FC = () => {
                 {gameWon ? "Congratulations! You Won!" : "Game Over!"}
               </h2>
               <p className="text-xl text-gray-700">Your final score: {score}</p>
-              {score > 0 && (
+              {score > 0 && score >= maxScore && (
                 <form onSubmit={handleNameSubmit} className="space-y-4">
                   <Input
                     type="text"
@@ -204,6 +245,7 @@ export const Game: React.FC = () => {
               oddPosition={oddPosition}
               onSquareClick={handleSquareClick}
               showHint={showHint}
+              gameEnded={gameEnded}
             />
             <div className="flex justify-between">
               <Button
@@ -229,6 +271,11 @@ export const Game: React.FC = () => {
           </>
         )}
       </div>
+      <audio ref={soundRef} src="/pop.mp3" />
+      <audio ref={failsoundRef} src="/fail.mp3" />
+      <audio ref={winsoundRef} src="/win.mp3" />
+      <audio ref={hintsoundRef} src="/hint.mp3" />
+      <audio ref={restartsoundRef} src="/restart.mp3" />
     </div>
   );
 };
